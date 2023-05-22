@@ -1,0 +1,454 @@
+---
+title: "Exploratory Data Visualization"
+author: "Niklas"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(visdat)
+library(DataExplorer)
+library(forcats)
+
+theme_set(theme_classic())
+```
+
+# Read Data
+
+```{r, message=FALSE}
+movies <- read_csv(file = "data/movies.csv")
+movies_expensive <- read_csv(file = "data/movies_expensive.csv")
+movies_successful <- read_csv(file = "data/movies_success.csv")
+bechdel <- read_csv(file = "data/bechdel.csv")
+chocolate <- read_csv(file = "data/chocolate.csv")
+liking_self <- read_csv(file = "data/liking_self.csv")
+liking_pol <- read_csv(file = "data/liking_pol.csv")
+fossils <- read_csv(file = "data/fossils.csv")
+
+bechdel <- bechdel %>% 
+  mutate(clean_test = fct_relevel(clean_test, c("dubious", "nowomen", "notalk", "men", "ok")))
+```
+
+# Getting an Overview
+
+## General
+
+```{r, eval=FALSE}
+View(bechdel)
+```
+
+```{r}
+glimpse(bechdel)
+```
+
+```{r}
+vis_dat(bechdel)
+```
+
+## Missing
+
+```{r}
+vis_miss(bechdel)
+```
+
+## Categorical Variables
+
+```{r}
+plot_bar(bechdel)
+```
+
+## Continuous Variables
+
+```{r}
+plot_histogram(bechdel)
+```
+
+## Correlations
+
+```{r}
+plot_correlation(bechdel)
+```
+
+Be careful when you want to add discrete variables. DataExplorer also displays a correlation for them:
+
+```{r}
+plot_correlation(bechdel, cor_args = list("use" = "pairwise.complete.obs"))
+```
+
+```{r}
+plot_correlation(bechdel, type = "continuous", cor_args = list("use" = "pairwise.complete.obs"))
+```
+
+## Exercise 1 
+
+Get an overview over the movies data set.
+
+```{r}
+glimpse(movies)
+```
+
+```{r}
+vis_dat(movies)
+```
+
+```{r}
+vis_miss(movies)
+```
+
+```{r}
+plot_bar(movies)
+```
+
+```{r}
+plot_histogram(movies)
+```
+
+```{r}
+plot_correlation(movies)
+```
+
+# Visualizing Quantities
+
+## How to use ggplot
+
+Tell ggplot which data to use
+
+```{r}
+ggplot(movies)
+```
+
+Define X and Y axis through the aes() (aesthetics) argument
+
+```{r}
+ggplot(movies)+
+  aes(x = genre)
+```
+
+## Barplot
+
+Put data in the graph using the geom_* argument
+
+```{r}
+ggplot(movies)+
+  aes(x = genre)+
+  geom_bar()
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = genre)+
+  geom_bar() +
+  coord_flip()
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = fct_infreq(genre))+
+  geom_bar() +
+  coord_flip()
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = fct_rev(fct_infreq(genre)))+
+  geom_bar() +
+  coord_flip()+
+  labs(y = "Count", x = "Genre")
+```
+
+*Grouping*
+
+```{r}
+ggplot(movies)+
+  aes(x = fct_rev(fct_infreq(genre)), fill = mpaa_rating)+
+  geom_bar() +
+  coord_flip() +
+  labs(y = "Count", x = "Genre")
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = fct_rev(fct_infreq(genre)), fill = mpaa_rating)+
+  geom_bar(position = "fill") +
+  labs(y = "Count", x = "Genre")+
+  coord_flip()
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = fct_rev(fct_infreq(genre)), fill = mpaa_rating)+
+  geom_bar(position = "dodge") +
+  labs(y = "Count", x = "Genre")+
+  coord_flip()
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = fct_rev(fct_infreq(genre)))+
+  geom_bar() +
+  facet_wrap(~mpaa_rating)+
+  labs(y = "Count", x = "Genre")+
+  coord_flip()
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = fct_rev(fct_infreq(genre)), fill = mpaa_rating)+
+  geom_bar(position = "fill") +
+  facet_wrap(~before_2005)+
+  labs(y = "Count", x = "Genre")+
+  coord_flip()
+```
+
+## Exercise 2
+
+Create a barplot of the bechdel data set to see how many movies are in each category of the clean_test variable.
+
+```{r}
+ggplot(bechdel)+
+  aes(x = clean_test)+
+  geom_bar() +
+  coord_flip()
+```
+
+Create a barplot of the chocolate data set to see how many companies are located in each country. Choose a good order for the bars.
+
+```{r}
+ggplot(chocolate)+
+  aes(x = fct_rev(fct_infreq(company_location)))+
+  geom_bar() +
+  coord_flip()
+```
+
+Choose two ways to visualize the relationship between company location and bitterness of the chocolate (variable name: bitter).
+
+```{r}
+ggplot(chocolate)+
+  aes(x = fct_rev(fct_infreq(company_location)), fill = bitter)+
+  geom_bar(position = "fill") +
+  coord_flip()
+```
+
+```{r}
+ggplot(chocolate)+
+  aes(x = company_location)+
+  geom_bar()+
+  facet_wrap(~bitter)+
+  coord_flip()
+```
+
+## Columns
+
+```{r}
+ggplot(movies_successful, aes(x = movie, y = worldwide_gross)) +
+  geom_col() +
+  coord_flip()
+```
+
+```{r}
+ggplot(movies_successful, aes(x = fct_reorder(movie, worldwide_gross), y = worldwide_gross)) +
+  geom_col() +
+  coord_flip()
+```
+
+## Dot Plots
+
+```{r}
+ggplot(movies_expensive, aes(x = fct_reorder(movie, production_budget), y = production_budget)) +
+  geom_col() +
+  coord_flip()
+```
+
+```{r}
+ggplot(movies_expensive, aes(x = fct_reorder(movie, production_budget), y = production_budget)) +
+  geom_point() +
+  coord_flip()
+```
+
+```{r}
+ggplot(movies_expensive, aes(x = fct_reorder(movie, production_budget), y = production_budget)) +
+  geom_point(color = "dark blue") +
+  coord_flip() +
+  theme(panel.grid.major.y = element_line(colour = "gray"))
+```
+
+## Exercise 3
+
+Choose a fitting graph for the liking_self data set.
+
+```{r}
+ggplot(liking_self) +
+  aes(x = fct_reorder(group, liking), y = liking) +
+  geom_point(color = "dark blue") +
+  coord_flip() +
+  theme(panel.grid.major.y = element_line(colour = "gray"))
+```
+
+Choose a fitting graph for the liking_pol data set.
+
+```{r}
+ggplot(liking_pol) +
+  aes(x = fct_reorder(group, cor), y = cor) +
+  geom_col() +
+  coord_flip()
+```
+
+# Visualizing Distributions - Histogram
+
+```{r}
+ggplot(movies)+
+  aes(x = production_budget)+
+  geom_histogram()
+```
+
+## Changing the number of bins
+
+```{r}
+ggplot(movies)+
+  aes(x = production_budget)+
+  geom_histogram(bins = 50)
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = production_budget)+
+  geom_histogram(binwidth = 5000000)
+```
+
+## Adding measure of central tendency
+
+```{r}
+ggplot(movies)+
+  aes(x = production_budget)+
+  geom_histogram(bins = 20)+
+  geom_vline(xintercept = mean(movies$production_budget, na.rm = TRUE))
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = production_budget)+
+  geom_histogram(bins = 20)+
+  geom_vline(xintercept = mean(movies$production_budget, na.rm = TRUE), color = "black") +
+  geom_vline(xintercept = median(movies$production_budget, na.rm = TRUE), color = "dark blue")
+```
+
+## Grouping
+
+```{r}
+ggplot(movies)+
+  aes(x = production_budget, fill = mpaa_rating)+
+  geom_histogram(bins = 20)
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = production_budget, fill = mpaa_rating)+
+  geom_histogram(bins = 20, position = "fill")
+```
+
+## Exercise 4
+
+Create a histogram for the IMDB-rating in the bechdel data set.Choose a good binwidth and add a vertical line for the mean.
+
+```{r}
+ggplot(bechdel)+
+  aes(x = imdb_rating)+
+  geom_histogram(binwidth = .1)
+```
+
+Create a histogram for the IMDB-rating grouped by the Bechdel test score (clean_test).
+
+```{r}
+ggplot(bechdel)+
+  aes(x = imdb_rating, fill = clean_test)+
+  geom_histogram(bins = 30, position = "fill")
+```
+
+# Visualizing the Relationship between Continuous Variables
+
+```{r}
+ggplot(movies)+
+  aes(x = domestic_gross, y = worldwide_gross)+
+  geom_point()
+```
+
+Adding a "fit line" to our plot:
+
+```{r}
+ggplot(movies)+
+  aes(x = domestic_gross, y = worldwide_gross)+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+
+## Exercise 5
+
+Explore the relationship between the funding of an archaeological expedition and the quality of the fossils that are discovered (fossil data set).
+
+```{r}
+ggplot(fossils)+
+  aes(x = funding_centile, y = fossil_quality_centile) %>% 
+  geom_point()
+```
+
+Visualize the relationship between IMDB score and meta score in the bechdel data set. 
+
+```{r}
+ggplot(bechdel)+
+  aes(x = imdb_rating, y = metascore)+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+# Making Plots Pretty
+
+## Title and Labels
+
+```{r}
+ggplot(bechdel)+
+  aes(x = metascore, fill = clean_test)+
+  geom_histogram(position = "fill")+
+  labs(title = "Bechdel Test Scores by Meta Score", x = "Metascore", fill = "Bechdel Test Result")
+```
+
+## Colors
+
+```{r}
+ggplot(movies)+
+  aes(x = mpaa_rating)+
+  geom_bar(fill = "blue")
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = mpaa_rating)+
+  geom_bar(color = "blue")
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = worldwide_gross, y = domestic_gross)+
+  geom_point(color = "dark red")
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = mpaa_rating)+
+  geom_bar(fill = "lavender", color = "turquoise")
+```
+
+## Exercise 6
+
+Choose one of the plots of this class and change its colors and labels in any way that you want.
+
+# Resources
+
+ggplot CheatSheet: https://statsandr.com/blog/files/ggplot2-cheatsheet.pdf
+The R Graph Gallery: https://www.r-graph-gallery.com/
+Color options: http://sape.inf.usi.ch/quick-reference/ggplot2/colour
+
+Further Reading:
+https://clauswilke.com/dataviz/
+https://lisacharlottemuth.com/talks
