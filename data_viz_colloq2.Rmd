@@ -1,0 +1,256 @@
+---
+title: "Exploratory Data Visualization"
+author: "Niklas"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Goals
+
+1. Relationship between continuous variables
+
+2. Making plots pretty
+
+3. Fancy plots
+
+4. Own exploration
+
+# Setup
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(visdat)
+library(DataExplorer)
+library(forcats)
+library(ggside)
+library(ggdist)
+library(gghalves)
+
+theme_set(theme_classic())
+```
+
+# Read Data
+
+```{r, message=FALSE}
+movies <- read_csv(file = "data/movies.csv")
+movies_expensive <- read_csv(file = "data/movies_expensive.csv")
+movies_successful <- read_csv(file = "data/movies_success.csv")
+bechdel <- read_csv(file = "data/bechdel.csv")
+chocolate <- read_csv(file = "data/chocolate.csv")
+liking_self <- read_csv(file = "data/liking_self.csv")
+liking_pol <- read_csv(file = "data/liking_pol.csv")
+fossils <- read_csv(file = "data/fossils.csv")
+
+bechdel <- bechdel %>% 
+  mutate(clean_test = fct_relevel(clean_test, c("dubious", "nowomen", "notalk", "men", "ok")))
+```
+
+# Visualizing the Relationship between Continuous Variables
+
+```{r}
+ggplot(movies)+
+  aes(x = domestic_gross, y = worldwide_gross)+
+  geom_point()
+```
+
+Adding a "fit line" to our plot:
+
+```{r}
+ggplot(movies)+
+  aes(x = domestic_gross, y = worldwide_gross)+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+
+## Exercise 5
+
+Explore the relationship between the funding of an archaeological expedition and the quality of the fossils that are discovered (fossil data set).
+
+```{r}
+ggplot(fossils)+
+  aes(x = funding_centile, y = fossil_quality_centile) %>% 
+  geom_point()
+```
+
+Visualize the relationship between IMDB score and meta score in the bechdel data set. 
+
+```{r}
+ggplot(bechdel)+
+  aes(x = imdb_rating, y = metascore)+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+# Making Plots Pretty
+
+## Title and Labels
+
+```{r}
+ggplot(bechdel)+
+  aes(x = metascore, fill = clean_test)+
+  geom_histogram(position = "fill")+
+  labs(title = "Bechdel Test Scores by Meta Score", x = "Metascore", y = "Count", fill = "Bechdel Test Result")
+```
+
+## Colors
+
+```{r}
+ggplot(movies)+
+  aes(x = mpaa_rating)+
+  geom_bar(fill = "blue")
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = mpaa_rating)+
+  geom_bar(color = "blue")
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = worldwide_gross, y = domestic_gross)+
+  geom_point(color = "dark red")
+```
+
+```{r}
+ggplot(movies)+
+  aes(x = mpaa_rating)+
+  geom_bar(fill = "lavender", color = "turquoise")
+```
+
+## Exercise 6
+
+Choose one of the plots of this class and change its colors and labels in any way that you want.
+
+# Fancy Plots
+
+## Sideplots
+
+```{r}
+ggplot(bechdel)+
+  aes(x = imdb_rating, y = metascore)+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+```{r}
+ggplot(bechdel)+
+  aes(x = imdb_rating, y = metascore)+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  geom_xsidehistogram(bins = 30)+
+  geom_ysidehistogram(bins = 30)
+```
+
+```{r}
+ggplot(bechdel)+
+  aes(x = imdb_rating, y = metascore)+
+  geom_point(aes(color = clean_test))+
+  geom_smooth(method = "lm")+
+  geom_xsidedensity(aes(fill = clean_test), bins = 30, alpha = .3)+
+  geom_ysidedensity(aes(fill = clean_test), bins = 30, alpha = .3)
+```
+
+## Violin, Raincloud, and Combination Plots
+
+```{r}
+bechdel %>% 
+  group_by(clean_test) %>% 
+  summarise(rating = mean(metascore, na.rm = TRUE)) %>% 
+  ggplot()+
+  aes(x = clean_test, y = rating, fill = clean_test)+
+  geom_col()
+```
+
+```{r}
+bechdel %>% 
+  ggplot()+
+  aes(x = clean_test, y = metascore, color = clean_test)+
+  geom_jitter()
+```
+
+```{r}
+bechdel %>% 
+  ggplot()+
+  aes(x = clean_test, y = metascore, fill = clean_test)+
+  geom_violin()
+```
+
+```{r}
+bechdel %>% 
+  ggplot()+
+  aes(x = clean_test, y = metascore, fill = clean_test)+
+  geom_boxplot()
+```
+
+```{r}
+bechdel %>% 
+  ggplot()+
+  aes(x = clean_test, y = metascore, fill = clean_test)+
+  geom_violin(alpha = .5) + 
+  geom_boxplot(width = .4, outlier.shape = NA, coef = 0)
+```
+
+```{r}
+bechdel %>% 
+  ggplot()+
+  aes(x = clean_test, y = metascore, fill = clean_test)+
+  geom_violin(alpha = .5) + 
+  geom_boxplot(width = .4, outlier.shape = NA, coef = 0)+
+  geom_jitter(alpha = .2)
+```
+
+```{r}
+bechdel %>% 
+  ggplot()+
+  aes(x = clean_test, y = metascore, fill = clean_test)+
+  stat_halfeye(width = .5)+
+  stat_dots(side = "left", justification = 1.05, binwidth = .6)
+```
+
+```{r}
+bechdel %>% 
+  ggplot()+
+  aes(x = clean_test, y = metascore, fill = clean_test)+
+  stat_halfeye(width = .3, .width = 0, justification = -.3, point_colour = NA) + 
+  stat_dots(side = "left", justification = 1.1, binwidth = .5) +
+  geom_boxplot(width = .1, outlier.shape = NA)
+```
+
+```{r}
+bechdel %>% 
+  ggplot()+
+  aes(x = clean_test, y = metascore, fill = clean_test)+
+  stat_halfeye(width = .3, .width = 0, justification = -.3, point_colour = NA) + 
+  geom_boxplot(width = .1, outlier.shape = NA)+
+  geom_half_point(aes(color = clean_test), side = "l", range_scale = .4, alpha = .5)
+```
+
+
+## Exercise 7
+
+1. Create a graph that shows the correlation between domestic and worldwide gross in the movies data set. Add sideplots who show the variable distributions.
+
+2. Play around with the arguments in the graphs that we created above and see what they do.
+
+3. Visualize the relationship between movie genre and worldwide gross with a fancy graph of your choice.
+
+# Own Exploration
+
+Check out which graphs might be useful for your own data. Either use geoms from this workshop, or get inspired here:
+
+https://r-graph-gallery.com/
+https://z3tt.github.io/Rainclouds/
+
+# Resources
+
+For reference and inspiration: https://www.r-graph-gallery.com/
+Other Fancy Plots: https://z3tt.github.io/Rainclouds/
+
+ggplot CheatSheet: https://statsandr.com/blog/files/ggplot2-cheatsheet.pdf
+Color options: http://sape.inf.usi.ch/quick-reference/ggplot2/colour
+
+Further Reading:
+https://clauswilke.com/dataviz/
+https://lisacharlottemuth.com/talks
