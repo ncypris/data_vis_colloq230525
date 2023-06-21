@@ -1,0 +1,185 @@
+---
+title: "Exploratory Data Visualization"
+author: "Niklas"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Goals
+
+1. Relationship between continuous variables
+
+2. Making plots pretty
+
+3. Fancy plots
+
+4. Own exploration
+
+# Setup
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(visdat)
+library(DataExplorer)
+library(forcats)
+library(ggside)
+library(ggdist)
+library(gghalves)
+
+theme_set(theme_classic())
+```
+
+# Read Data
+
+```{r, message=FALSE}
+movies <- read_csv(file = "data/movies.csv")
+movies_expensive <- read_csv(file = "data/movies_expensive.csv")
+movies_successful <- read_csv(file = "data/movies_success.csv")
+bechdel <- read_csv(file = "data/bechdel.csv")
+chocolate <- read_csv(file = "data/chocolate.csv")
+liking_self <- read_csv(file = "data/liking_self.csv")
+liking_pol <- read_csv(file = "data/liking_pol.csv")
+fossils <- read_csv(file = "data/fossils.csv")
+
+bechdel <- bechdel %>% 
+  mutate(clean_test = fct_relevel(clean_test, c("dubious", "nowomen", "notalk", "men", "ok")))
+```
+
+# Visualizing the Relationship between Continuous Variables
+
+```{r}
+
+```
+
+Adding a "fit line" to our plot:
+
+```{r}
+
+```
+
+
+## Exercise 5
+
+Explore the relationship between the funding of an archaeological expedition and the quality of the fossils that are discovered (fossil data set).
+
+```{r}
+
+```
+
+Visualize the relationship between IMDB score and meta score in the bechdel data set. 
+
+```{r}
+
+```
+
+# Making Plots Pretty
+
+## Title and Labels
+
+```{r}
+
+```
+
+## Colors
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+## Exercise 6
+
+Choose one of the plots of this class and change its colors and labels in any way that you want.
+
+# Fancy Plots
+
+## Sideplots
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+## Violin, Raincloud, and Combination Plots
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+## Exercise 7
+
+1. Create a graph that shows the correlation between domestic and worldwide gross in the movies data set. Add sideplots who show the variable distributions.
+
+2. Play around with the arguments in the graphs that we created above and see what they do.
+
+3. Visualize the relationship between movie genre and worldwide gross with a fancy graph of your choice.
+
+# Own Exploration
+
+Check out which graphs might be useful for your own data. Either use geoms from this workshop, or get inspired here:
+
+https://r-graph-gallery.com/
+https://z3tt.github.io/Rainclouds/
+
+# Resources
+
+For reference and inspiration: https://www.r-graph-gallery.com/
+Other Fancy Plots: https://z3tt.github.io/Rainclouds/
+
+ggplot CheatSheet: https://statsandr.com/blog/files/ggplot2-cheatsheet.pdf
+Color options: http://sape.inf.usi.ch/quick-reference/ggplot2/colour
+
+Further Reading:
+https://clauswilke.com/dataviz/
+https://lisacharlottemuth.com/talks
